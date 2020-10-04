@@ -1,27 +1,43 @@
-<template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
-</template>
-
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import HelloWorld from './components/HelloWorld.vue';
+import { computed, defineComponent, onMounted } from "vue";
 
-@Options({
-  components: {
-    HelloWorld,
-  },
-})
-export default class App extends Vue {}
+import { useStore } from "./store";
+import { ActionTypes } from "./store/actions";
+
+import NewItem from "./components/NewItem.vue";
+import TodoList from "./components/TodoList.vue";
+
+export default defineComponent({
+    components: { NewItem, TodoList },
+    setup() {
+        const store = useStore();
+
+        const loading = computed(() => store.state.loading);
+        onMounted(() => store.dispatch(ActionTypes.GetTodoItems));
+
+        const completedCount = computed(() => store.getters.completedCount);
+        const totalCount = computed(() => store.getters.totalCount);
+
+        return { loading, completedCount, totalCount };
+    },
+});
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<template>
+    <div class="container mx-auto mt-4">
+        <h1 class="text-3xl text-center p-2 font-bold">
+            Vue 3 APP ||| TS + Vuex 4
+        </h1>
+
+        <div v-if="loading">
+            <h3 class="text-center mt-4">L O A D I N G . . .</h3>
+        </div>
+        <div v-else>
+            <p class="text-center mt-2">
+                {{ completedCount }} of {{ totalCount }} completed.
+            </p>
+            <NewItem />
+            <TodoList />
+        </div>
+    </div>
+</template>
